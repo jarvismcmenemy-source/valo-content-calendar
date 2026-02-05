@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VALO Content Calendar Planner</title>
+    <style>
+        :root {
+            --primary: #8B5CF6;
+            --primary-hover: #7C3AED;
+            --primary-light: rgba(139, 92, 246, 0.15);
+            --bg-dark: #0F0F0F;
+            --bg-card: #1A1A1A;
+            --bg-elevated: #242424;
+            --border: #2D2D2D;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A1A1AA;
+            --text-muted: #71717A;
+            --success: #22C55E;
+            --warning: #F59E0B;
+            --error: #EF4444;
+            --info: #3B82F6;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .logo-text h1 {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text span {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: var(--bg-card);
+            padding: 6px;
+            border-radius: var(--radius);
+            width: fit-content;
+        }
+
+        .nav-tab {
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+        }
+
+        .nav-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Panels */
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            justify-content: center;
+        }
+
+        /* Calendar */
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .calendar-title {
+            font-size: 20px;
+            font-weight: 600;
+            min-width: 180px;
+            text-align: center;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .calendar-day-header {
+            background: var(--bg-card);
+            padding: 12px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+        }
+
+        .calendar-day {
+            background: var(--bg-card);
+            min-height: 120px;
+            padding: 8px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .calendar-day:hover {
+            background: var(--bg-elevated);
+        }
+
+        .calendar-day.other-month {
+            background: rgba(26, 26, 26, 0.5);
+            color: var(--text-muted);
+        }
+
+        .calendar-day.today {
+            background: var(--primary-light);
+        }
+
+        .calendar-day.today .day-number {
+            background: var(--primary);
+            color: white;
+        }
+
+        .calendar-day.drag-over {
+            background: var(--primary-light);
+            box-shadow: inset 0 0 0 2px var(--primary);
+        }
+
+        .day-number {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .day-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .calendar-item {
+            padding: 6px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            cursor: grab;
+            border-left: 3px solid var(--primary);
+            background: var(--bg-elevated);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .calendar-item:hover {
+            opacity: 0.9;
+        }
+
+        .calendar-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .calendar-item.status-idea { border-left-color: var(--text-muted); }
+        .calendar-item.status-writing { border-left-color: var(--info); }
+        .calendar-item.status-scheduled { border-left-color: var(--warning); }
+        .calendar-item.status-published { border-left-color: var(--success); }
+
+        .calendar-item-platform {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+
+        .platform-linkedin { background: #0A66C2; }
+        .platform-blog { background: var(--primary); }
+        .platform-twitter { background: #1DA1F2; }
+
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 24px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Content Queue */
+        .queue-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .queue-item {
+            background: var(--bg-elevated);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .queue-item:hover {
+            border-color: var(--primary);
+        }
+
+        .queue-item.dragging {
+            opacity: 0.5;
+        }
+
+        .queue-item-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .queue-item-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .queue-item-title {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .queue-item-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .queue-item-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .queue-item:hover .queue-item-actions {
+            opacity: 1;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .status-idea { background: rgba(113, 113, 122, 0.2); color: var(--text-secondary); }
+        .status-writing { background: rgba(59, 130, 246, 0.2); color: var(--info); }
+        .status-scheduled { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .status-published { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+
+        /* Platform Badge */
+        .platform-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .platform-linkedin-badge { background: rgba(10, 102, 194, 0.2); color: #60A5FA; }
+        .platform-blog-badge { background: var(--primary-light); color: var(--primary); }
+        .platform-twitter-badge { background: rgba(29, 161, 242, 0.2); color: #60A5FA; }
+
+        /* AI Suggestions */
+        .suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .suggestion-card {
+            background: var(--bg-elevated);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .suggestion-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .suggestion-category {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .suggestion-title {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .suggestion-description {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .suggestion-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 24px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+        }
+
+        .modal-close:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        /* Status Progress */
+        .status-progress {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .status-step {
+            width: 24px;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--border);
+        }
+
+        .status-step.active {
+            background: var(--primary);
+        }
+
+        .status-step.completed {
+            background: var(--success);
+        }
+
+        /* Category Tags */
+        .category-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .category-ai { background: rgba(139, 92, 246, 0.15); color: #A78BFA; }
+        .category-value { background: rgba(34, 197, 94, 0.15); color: #4ADE80; }
+        .category-startup { background: rgba(245, 158, 11, 0.15); color: #FBBF24; }
+        .category-entrepreneur { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .suggestions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .calendar-grid {
+                font-size: 12px;
+            }
+
+            .calendar-day {
+                min-height: 80px;
+                padding: 4px;
+            }
+
+            .calendar-item {
+                font-size: 10px;
+                padding: 4px 6px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow);
+            animation: slideIn 0.3s ease-out;
+            min-width: 280px;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast-icon {
+            font-size: 20px;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .toast-message {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Icon helpers */
+        .icon-linkedin::before { content: "💼"; }
+        .icon-blog::before { content: "📝"; }
+        .icon-twitter::before { content: "🐦"; }
+        .icon-idea::before { content: "💡"; }
+        .icon-calendar::before { content: "📅"; }
+        .icon-queue::before { content: "📋"; }
+        .icon-suggestions::before { content: "✨"; }
+        .icon-plus::before { content: "+"; font-weight: 700; }
+        .icon-close::before { content: "×"; }
+        .icon-edit::before { content: "✏️"; }
+        .icon-delete::before { content: "🗑️"; }
+        .icon-check::before { content: "✓"; }
+        .icon-chevron-left::before { content: "‹"; font-size: 24px; }
+        .icon-chevron-right::before { content: "›"; font-size: 24px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">V</div>
+                <div class="logo-text">
+                    <h1>VALO Content Planner</h1>
+                    <span>Editorial Calendar & Content Queue</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="openModal()">
+                    <span class="icon-plus"></span>
+                    New Idea
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('calendar')">
+                <span class="icon-calendar" style="margin-right: 6px;"></span>
+                Calendar
+            </button>
+            <button class="nav-tab" onclick="switchTab('queue')">
+                <span class="icon-queue" style="margin-right: 6px;"></span>
+                Content Queue
+            </button>
+            <button class="nav-tab" onclick="switchTab('suggestions')">
+                <span class="icon-suggestions" style="margin-right: 6px;"></span>
+                AI Suggestions
+            </button>
+        </nav>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-total">0</div>
+                <div class="stat-label">Total Ideas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-writing">0</div>
+                <div class="stat-label">In Writing</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-scheduled">0</div>
+                <div class="stat-label">Scheduled</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-published">0</div>
+                <div class="stat-label">Published</div>
+            </div>
+        </div>
+
+        <!-- Calendar Panel -->
+        <div id="calendar-panel" class="panel active">
+            <div class="calendar-header">
+                <div class="calendar-nav">
+                    <button class="btn btn-icon btn-secondary" onclick="changeMonth(-1)">
+                        <span class="icon-chevron-left"></span>
+                    </button>
+                    <div class="calendar-title" id="calendar-title">January 2025</div>
+                    <button class="btn btn-icon btn-secondary" onclick="changeMonth(1)">
+                        <span class="icon-chevron-right"></span>
+                    </button>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="goToToday()">Today</button>
+            </div>
+
+            <div class="calendar-grid" id="calendar-grid">
+                <!-- Calendar generated by JS -->
+            </div>
+        </div>
+
+        <!-- Queue Panel -->
+        <div id="queue-panel" class="panel">
+            <div class="content-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Upcoming Content</h3>
+                        <div class="filters">
+                            <select class="form-select" id="queue-filter-status" onchange="renderQueue()" style="width: auto;">
+                                <option value="all">All Status</option>
+                                <option value="idea">Idea</option>
+                                <option value="writing">Writing</option>
+                                <option value="scheduled">Scheduled</option>
+                                <option value="published">Published</option>
+                            </select>
+                            <select class="form-select" id="queue-filter-platform" onchange="renderQueue()" style="width: auto;">
+                                <option value="all">All Platforms</option>
+                                <option value="linkedin">LinkedIn</option>
+                                <option value="blog">Blog</option>
+                                <option value="twitter">Twitter</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="queue-list" id="queue-list">
+                        <!-- Queue items generated by JS -->
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Quick Stats</h3>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">By Platform</div>
+                            <div id="platform-stats" style="display: flex; flex-direction: column; gap: 8px;">
+                                <!-- Platform stats generated by JS -->
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">By Category</div>
+                            <div id="category-stats" style="display: flex; flex-direction: column; gap: 8px;">
+                                <!-- Category stats generated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suggestions Panel -->
+        <div id="suggestions-panel" class="panel">
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="card-header">
+                    <h3 class="card-title">AI Topic Suggestions</h3>
+                    <span style="font-size: 13px; color: var(--text-secondary);">Based on VALO content themes</span>
+                </div>
+                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">
+                    These suggestions are tailored to Chris's core content themes: AI Readiness, Value Proposition, Startup Culture, and Entrepreneurship.
+                </p>
+                <div class="suggestions-grid" id="suggestions-grid">
+                    <!-- Suggestions generated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">New Content Idea</h3>
+                <button class="modal-close" onclick="closeModal()">
+                    <span class="icon-close"></span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="content-id">
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input type="text" class="form-input" id="content-title" placeholder="Enter content title...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Platform</label>
+                    <select class="form-select" id="content-platform">
+                        <option value="linkedin">LinkedIn</option>
+                        <option value="blog">Blog</option>
+                        <option value="twitter">Twitter</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" id="content-category">
+                        <option value="ai">AI Readiness</option>
+                        <option value="value">Value Proposition</option>
+                        <option value="startup">Startup Culture</option>
+                        <option value="entrepreneur">Entrepreneurship</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="content-status">
+                        <option value="idea">💡 Idea</option>
+                        <option value="writing">✏️ Writing</option>
+                        <option value="scheduled">📅 Scheduled</option>
+                        <option value="published">✅ Published</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Target Date</label>
+                    <input type="date" class="form-input" id="content-date">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-textarea" id="content-notes" placeholder="Add any notes, links, or ideas..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveContent()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // Data Store
+        let contentItems = JSON.parse(localStorage.getItem('valo_content')) || [];
+        let currentDate = new Date();
+        let draggedItem = null;
+
+        // AI Topic Suggestions Database
+        const topicSuggestions = [
+            {
+                category: 'ai',
+                categoryLabel: 'AI Readiness',
+                title: 'The 5-Step AI Readiness Assessment for SMEs',
+                description: 'A practical framework for evaluating your organization\'s preparedness for AI adoption.'
+            },
+            {
+                category: 'ai',
+                categoryLabel: 'AI Readiness',
+                title: 'Why Most AI Pilots Fail (And How to Fix Yours)',
+                description: 'Common pitfalls in AI implementation and strategies to ensure successful deployment.'
+            },
+            {
+                category: 'ai',
+                categoryLabel: 'AI Readiness',
+                title: 'Building Your AI Playbook: From Strategy to Execution',
+                description: 'How to create an actionable roadmap for integrating AI into your business processes.'
+            },
+            {
+                category: 'value',
+                categoryLabel: 'Value Proposition',
+                title: 'The Art of Articulating Value in Technical Sales',
+                description: 'Bridging the gap between technical features and business value for complex B2B solutions.'
+            },
+            {
+                category: 'value',
+                categoryLabel: 'Value Proposition',
+                title: 'Value-Based Pricing vs. Cost-Plus: A Decision Framework',
+                description: 'When and how to shift from cost-based to value-based pricing models.'
+            },
+            {
+                category: 'value',
+                categoryLabel: 'Value Proposition',
+                title: 'The Customer Success Metrics That Actually Matter',
+                description: 'Moving beyond vanity metrics to measure real customer value and outcomes.'
+            },
+            {
+                category: 'startup',
+                categoryLabel: 'Startup Culture',
+                title: 'Scaling Culture: From 10 to 100 Employees',
+                description: 'How to preserve your startup\'s DNA while building structure for growth.'
+            },
+            {
+                category: 'startup',
+                categoryLabel: 'Startup Culture',
+                title: 'The Remote-First Playbook for Startup Founders',
+                description: 'Building a cohesive culture when your team is distributed across time zones.'
+            },
+            {
+                category: 'startup',
+                categoryLabel: 'Startup Culture',
+                title: 'Why Your Hiring Process is Broken (And How to Fix It)',
+                description: 'Redesigning recruitment to find culture-add, not just culture-fit.'
+            },
+            {
+                category: 'entrepreneur',
+                categoryLabel: 'Entrepreneurship',
+                title: 'The Founder\'s Dilemma: When to Pivot vs. Persevere',
+                description: 'A decision framework for navigating the toughest strategic choices in early-stage ventures.'
+            },
+            {
+                category: 'entrepreneur',
+                categoryLabel: 'Entrepreneurship',
+                title: 'Bootstrapping vs. VC: Choosing Your Path',
+                description: 'The trade-offs between self-funding and venture capital for different business models.'
+            },
+            {
+                category: 'entrepreneur',
+                categoryLabel: 'Entrepreneurship',
+                title: 'The Solo Founder\'s Guide to Building a Team',
+                description: 'How to attract talent and build momentum as a first-time founder.'
+            }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCalendar();
+            renderQueue();
+            renderSuggestions();
+            updateStats();
+        });
+
+        // Tab Switching
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            
+            event.target.closest('.nav-tab').classList.add('active');
+            document.getElementById(`${tab}-panel`).classList.add('active');
+            
+            if (tab === 'queue') renderQueue();
+            if (tab === 'calendar') renderCalendar();
+        }
+
+        // Calendar Functions
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            document.getElementById('calendar-title').textContent = 
+                new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startDayOfWeek = firstDay.getDay();
+
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+
+            // Day headers
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayNames.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'calendar-day-header';
+                header.textContent = day;
+                grid.appendChild(header);
+            });
+
+            // Previous month days
+            const prevMonth = new Date(year, month, 0);
+            for (let i = startDayOfWeek - 1; i >= 0; i--) {
+                const day = prevMonth.getDate() - i;
+                grid.appendChild(createDayCell(day, true, year, month - 1));
+            }
+
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                grid.appendChild(createDayCell(day, false, year, month));
+            }
+
+            // Next month days
+            const remainingCells = 42 - (startDayOfWeek + daysInMonth);
+            for (let day = 1; day <= remainingCells; day++) {
+                grid.appendChild(createDayCell(day, true, year, month + 1));
+            }
+        }
+
+        function createDayCell(day, isOtherMonth, year, month) {
+            const date = new Date(year, month, day);
+            const dateStr = formatDate(date);
+            const isToday = isSameDay(date, new Date());
+            
+            const cell = document.createElement('div');
+            cell.className = `calendar-day ${isOtherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}`;
+            cell.dataset.date = dateStr;
+            
+            cell.innerHTML = `<div class="day-number">${day}</div><div class="day-content"></div>`;
+            
+            // Add items for this day
+            const dayItems = contentItems.filter(item => item.date === dateStr);
+            const contentContainer = cell.querySelector('.day-content');
+            
+            dayItems.forEach(item => {
+                const itemEl = createCalendarItem(item);
+                contentContainer.appendChild(itemEl);
+            });
+
+            // Click to add
+            cell.addEventListener('click', (e) => {
+                if (e.target === cell || e.target.classList.contains('day-number')) {
+                    openModal(null, dateStr);
+                }
+            });
+
+            // Drag and drop
+            cell.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                cell.classList.add('drag-over');
+            });
+
+            cell.addEventListener('dragleave', () => {
+                cell.classList.remove('drag-over');
+            });
+
+            cell.addEventListener('drop', (e) => {
+                e.preventDefault();
+                cell.classList.remove('drag-over');
+                if (draggedItem) {
+                    draggedItem.date = dateStr;
+                    if (draggedItem.status === 'idea') {
+                        draggedItem.status = 'scheduled';
+                    }
+                    saveData();
+                    renderCalendar();
+                    renderQueue();
+                    updateStats();
+                    showToast('Content rescheduled', `Moved to ${formatDisplayDate(dateStr)}`);
+                }
+            });
+
+            return cell;
+        }
+
+        function createCalendarItem(item) {
+            const el = document.createElement('div');
+            el.className = `calendar-item status-${item.status}`;
+            el.draggable = true;
+            el.innerHTML = `
+                <span class="calendar-item-platform platform-${item.platform}"></span>
+                ${escapeHtml(item.title)}
+            `;
+            
+            el.addEventListener('dragstart', () => {
+                draggedItem = item;
+                el.classList.add('dragging');
+            });
+
+            el.addEventListener('dragend', () => {
+                draggedItem = null;
+                el.classList.remove('dragging');
+            });
+
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openModal(item);
+            });
+
+            return el;
+        }
+
+        function changeMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function goToToday() {
+            currentDate = new Date();
+            renderCalendar();
+        }
+
+        // Queue Functions
+        function renderQueue() {
+            const statusFilter = document.getElementById('queue-filter-status').value;
+            const platformFilter = document.getElementById('queue-filter-platform').value;
+            
+            let filtered = contentItems.filter(item => {
+                if (statusFilter !== 'all' && item.status !== statusFilter) return false;
+                if (platformFilter !== 'all' && item.platform !== platformFilter) return false;
+                return true;
+            });
+
+            // Sort by date
+            filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            const container = document.getElementById('queue-list');
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-title">No content found</div>
+                        <p>Add new ideas or adjust your filters</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = filtered.map(item => createQueueItem(item)).join('');
+            }
+
+            // Update stats
+            renderPlatformStats();
+            renderCategoryStats();
+        }
+
+        function createQueueItem(item) {
+            const platformIcons = {
+                linkedin: '💼',
+                blog: '📝',
+                twitter: '🐦'
+            };
+
+            const statusLabels = {
+                idea: 'Idea',
+                writing: 'Writing',
+                scheduled: 'Scheduled',
+                published: 'Published'
+            };
+
+            return `
+                <div class="queue-item animate-in" onclick="openModalById('${item.id}')" draggable="true" data-id="${item.id}">
+                    <div class="queue-item-icon" style="background: var(--primary-light);">
+                        ${platformIcons[item.platform] || '📝'}
+                    </div>
+                    <div class="queue-item-content">
+                        <div class="queue-item-title">${escapeHtml(item.title)}</div>
+                        <div class="queue-item-meta">
+                            <span class="status-badge status-${item.status}">${statusLabels[item.status]}</span>
+                            <span class="platform-badge platform-${item.platform}-badge">${item.platform}</span>
+                            <span>${formatDisplayDate(item.date)}</span>
+                        </div>
+                    </div>
+                    <div class="queue-item-actions">
+                        <button class="btn btn-icon btn-sm btn-secondary" onclick="event.stopPropagation(); deleteContent('${item.id}')">
+                            <span class="icon-delete"></span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPlatformStats() {
+            const platforms = ['linkedin', 'blog', 'twitter'];
+            const counts = {};
+            platforms.forEach(p => counts[p] = contentItems.filter(i => i.platform === p).length);
+            
+            const container = document.getElementById('platform-stats');
+            container.innerHTML = platforms.map(p => `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="text-transform: capitalize; font-size: 13px;">${p}</span>
+                    <span style="font-weight: 600; color: var(--primary);">${counts[p]}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderCategoryStats() {
+            const categories = ['ai', 'value', 'startup', 'entrepreneur'];
+            const labels = { ai: 'AI Readiness', value: 'Value Prop', startup: 'Startup Culture', entrepreneur: 'Entrepreneurship' };
+            const counts = {};
+            categories.forEach(c => counts[c] = contentItems.filter(i => i.category === c).length);
+            
+            const container = document.getElementById('category-stats');
+            container.innerHTML = categories.map(c => `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px;">${labels[c]}</span>
+                    <span style="font-weight: 600; color: var(--primary);">${counts[c]}</span>
+                </div>
+            `).join('');
+        }
+
+        // Suggestions Functions
+        function renderSuggestions() {
+            const container = document.getElementById('suggestions-grid');
+            container.innerHTML = topicSuggestions.map(s => `
+                <div class="suggestion-card" onclick="useSuggestion('${s.title}', '${s.category}')">
+                    <div class="suggestion-category">${s.categoryLabel}</div>
+                    <div class="suggestion-title">${s.title}</div>
+                    <div class="suggestion-description">${s.description}</div>
+                    <div class="suggestion-actions">
+                        <button class="btn btn-primary btn-sm">Use This Idea</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function useSuggestion(title, category) {
+            document.getElementById('content-title').value = title;
+            document.getElementById('content-category').value = category;
+            document.getElementById('content-status').value = 'idea';
+            openModal();
+        }
+
+        // Modal Functions
+        function openModal(item = null, dateStr = null) {
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modal-title');
+            
+            if (item) {
+                title.textContent = 'Edit Content';
+                document.getElementById('content-id').value = item.id;
+                document.getElementById('content-title').value = item.title;
+                document.getElementById('content-platform').value = item.platform;
+                document.getElementById('content-category').value = item.category;
+                document.getElementById('content-status').value = item.status;
+                document.getElementById('content-date').value = item.date;
+                document.getElementById('content-notes').value = item.notes || '';
+            } else {
+                title.textContent = 'New Content Idea';
+                document.getElementById('content-id').value = '';
+                document.getElementById('content-title').value = '';
+                document.getElementById('content-platform').value = 'linkedin';
+                document.getElementById('content-category').value = 'ai';
+                document.getElementById('content-status').value = 'idea';
+                document.getElementById('content-date').value = dateStr || formatDate(new Date());
+                document.getElementById('content-notes').value = '';
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function openModalById(id) {
+            const item = contentItems.find(i => i.id === id);
+            if (item) openModal(item);
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function saveContent() {
+            const id = document.getElementById('content-id').value;
+            const title = document.getElementById('content-title').value.trim();
+            const platform = document.getElementById('content-platform').value;
+            const category = document.getElementById('content-category').value;
+            const status = document.getElementById('content-status').value;
+            const date = document.getElementById('content-date').value;
+            const notes = document.getElementById('content-notes').value.trim();
+
+            if (!title) {
+                showToast('Error', 'Please enter a title', 'error');
+                return;
+            }
+
+            if (id) {
+                // Update existing
+                const index = contentItems.findIndex(i => i.id === id);
+                if (index !== -1) {
+                    contentItems[index] = { ...contentItems[index], title, platform, category, status, date, notes };
+                }
+            } else {
+                // Create new
+                contentItems.push({
+                    id: Date.now().toString(),
+                    title,
+                    platform,
+                    category,
+                    status,
+                    date,
+                    notes,
+                    createdAt: new Date().toISOString()
+                });
+            }
+
+            saveData();
+            closeModal();
+            renderCalendar();
+            renderQueue();
+            updateStats();
+            showToast('Success', id ? 'Content updated' : 'New idea added');
+        }
+
+        function deleteContent(id) {
+            if (confirm('Are you sure you want to delete this content?')) {
+                contentItems = contentItems.filter(i => i.id !== id);
+                saveData();
+                renderCalendar();
+                renderQueue();
+                updateStats();
+                showToast('Deleted', 'Content removed');
+            }
+        }
+
+        // Stats
+        function updateStats() {
+            document.getElementById('stat-total').textContent = contentItems.length;
+            document.getElementById('stat-writing').textContent = contentItems.filter(i => i.status === 'writing').length;
+            document.getElementById('stat-scheduled').textContent = contentItems.filter(i => i.status === 'scheduled').length;
+            document.getElementById('stat-published').textContent = contentItems.filter(i => i.status === 'published').length;
+        }
+
+        // Storage
+        function saveData() {
+            localStorage.setItem('valo_content', JSON.stringify(contentItems));
+        }
+
+        // Utilities
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function formatDisplayDate(dateStr) {
+            return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function isSameDay(d1, d2) {
+            return d1.getFullYear() === d2.getFullYear() &&
+                   d1.getMonth() === d2.getMonth() &&
+                   d1.getDate() === d2.getDate();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Toast
+        function showToast(title, message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <span class="toast-icon">${icons[type]}</span>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Close modal on outside click
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') closeModal();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                openModal();
+            }
+        });
+    </script>
+</body>
+</html>
